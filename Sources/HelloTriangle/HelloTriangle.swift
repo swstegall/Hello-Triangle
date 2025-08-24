@@ -1,4 +1,4 @@
-import CGLAD
+@preconcurrency import CGLAD
 import CGLFW
 import CGLLOADER
 
@@ -21,7 +21,7 @@ let vertices: [Float] = [
 ]
 
 let vertexShaderSource = """
-#version 330 core
+#version 410 core
 layout (location = 0) in vec3 aPos;
 
 void main()
@@ -31,7 +31,7 @@ void main()
 """
 
 let fragmentShaderSource = """
-#version 330 core
+#version 410 core
 out vec4 FragColor;
 
 void main()
@@ -57,8 +57,8 @@ class HelloTriangle {
   
   static func setupOpenGLContext() {
     glfwInit()
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
     #if(os(macOS))
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE)
@@ -77,13 +77,9 @@ class HelloTriangle {
   static func renderLoop(window: OpaquePointer!) {
     // MARK: Vertex Shader.
     let vertexShader: GLuint = glCreateShader(GLenum(GL_VERTEX_SHADER))
-    withUnsafePointer(to: vertexShaderSource) { vertexShaderSourcePtr in
-      glShaderSource(
-        vertexShader,
-        1,
-        vertexShaderSourcePtr,
-        nil
-      )
+    vertexShaderSource.withCString { ptr in
+      var cStringPtr: UnsafePointer<GLchar>? = UnsafePointer(ptr)
+      glShaderSource(vertexShader, 1, &cStringPtr, nil)
     }
     glCompileShader(vertexShader)
     var status: GLint = 0
@@ -98,13 +94,9 @@ class HelloTriangle {
     
     // MARK: Fragment Shader.
     let fragmentShader: GLuint = glCreateShader(GLenum(GL_FRAGMENT_SHADER))
-    withUnsafePointer(to: fragmentShaderSource) { fragmentShaderSourcePtr in
-      glShaderSource(
-        fragmentShader,
-        1,
-        fragmentShaderSourcePtr,
-        nil
-      )
+    fragmentShaderSource.withCString { ptr in
+      var cStringPtr: UnsafePointer<GLchar>? = UnsafePointer(ptr)
+      glShaderSource(fragmentShader, 1, &cStringPtr, nil)
     }
     glCompileShader(fragmentShader)
     status = 0
@@ -135,10 +127,11 @@ class HelloTriangle {
 
     var VBO: GLuint = 0
     var VAO: GLuint = 0
-    glGenVertexArraysAPPLE(1, &VAO)
+    glad_glGenVertexArrays(1, &VAO)
     glGenBuffers(1, &VBO)
     // Bind the Vertex Array Object first, the bind and set vertex buffer(s), and then configure vertex attribute(s).
-    glBindVertexArrayAPPLE(VAO)
+    glad_glBindVertexArray(VAO)
+    print("VBO: \(VBO), VAO: \(VAO)")
     glBindBuffer(GLenum(GL_ARRAY_BUFFER), VBO)
     glBufferData(
       GLenum(GL_ARRAY_BUFFER),
@@ -152,7 +145,7 @@ class HelloTriangle {
       GLenum(GL_FLOAT),
       GLboolean(GLenum(GL_FALSE)),
       GLsizei(3 * MemoryLayout<Float>.stride),
-      UnsafeRawPointer(bitPattern: 0)
+      nil
     )
     glEnableVertexAttribArray(0)
     
@@ -160,10 +153,8 @@ class HelloTriangle {
     glBindBuffer(GLenum(GL_ARRAY_BUFFER), 0)
     
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other VAOs requires a call to glBindVertexArray anyway so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    glBindVertexArrayAPPLE(0)
-    glPolygonMode(GLenum(GL_FRONT_AND_BACK), GLenum(GL_LINE))
     
-    while((glfwWindowShouldClose(window) == GLFW_FALSE)) {
+    while(glfwWindowShouldClose(window) == GLFW_FALSE) {
       // Input.
       processInput(window: window)
       

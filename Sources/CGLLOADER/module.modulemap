@@ -1,0 +1,4 @@
+module CGLLOADER {
+  header "gl_loader_shim.h"
+  export *
+}

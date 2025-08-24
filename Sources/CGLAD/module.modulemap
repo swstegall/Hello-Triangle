@@ -1,0 +1,5 @@
+module CGLAD [system] {
+  header "include/glad/glad.h"
+  export *
+}
+

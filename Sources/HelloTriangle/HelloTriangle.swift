@@ -129,7 +129,7 @@ class HelloTriangle {
     var VAO: GLuint = 0
     glad_glGenVertexArrays(1, &VAO)
     glGenBuffers(1, &VBO)
-    // Bind the Vertex Array Object first, the bind and set vertex buffer(s), and then configure vertex attribute(s).
+    // Bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attribute(s).
     glad_glBindVertexArray(VAO)
     print("VBO: \(VBO), VAO: \(VAO)")
     glBindBuffer(GLenum(GL_ARRAY_BUFFER), VBO)
@@ -165,7 +165,7 @@ class HelloTriangle {
       
       // MARK: Use Shader Program.
       glUseProgram(shaderProgram)
-      glBindVertexArrayAPPLE(VAO)
+      glad_glBindVertexArray(VAO)
       glDrawArrays(GLenum(GL_TRIANGLES), 0, 3)
       
       // Check and call events and swap the buffers.
